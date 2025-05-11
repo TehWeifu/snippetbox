@@ -15,7 +15,7 @@
         <div>
             <label>Content:</label>
             {{with .Form.FieldErrors.content}}
-                <label class="error"{{.}}></label>
+                <label class="error">{{.}}</label>
             {{end}}
             <!-- Re-populate the consent data as the inner HTML of the textarea. -->
             <textarea name="content">{{.Form.Content}}</textarea>
