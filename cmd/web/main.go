@@ -8,21 +8,18 @@ import (
 	"net/http"
 	"os"
 
-	// Import the models package that we just created. You need to prefix this with
-	// whatever module path you set up back in chapter 02.01 (Project Setup and Creating
-	// a Module) so that the import statement looks like this:
-	// "{your-module-path}/internal/models". If you can't remember what model path you
-	// used, you can find it at the top of the go.mod file.
 	"github.com/tehweifu/snippetbox/internal/models"
 
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql" // New import
 )
 
-// Add a templateCache field to the application struct.
+// Add a formDecoder field to hold a pointer to a form.Decor
 type application struct {
 	logger        *slog.Logger
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -46,11 +43,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	// And add it to the application dependencies
+	// Initialize a decoder instance...
+	formDecoder := form.NewDecoder()
+
+	// And add it to the application dependencies.
 	app := &application{
 		logger:        logger,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	logger.Info("starting server", "addr", *addr)
