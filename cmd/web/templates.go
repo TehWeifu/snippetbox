@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/tehweifu/snippetbox/internal/models"
+	"github.com/tehweifu/snippetbox/ui"
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"time"
 )
@@ -31,7 +33,11 @@ var functions = template.FuncMap{
 func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	pages, err := filepath.Glob("./ui/html/pages/*.tmpl")
+	// Use fs.Glob() to get a slice of all filepaths in the ui.Files embedded
+	// filesystem which match the pattern 'html/pages/*.tmpl'. This essentially
+	// gives us a slice of all the 'page' templates for the application, just
+	// life before
+	pages, err := fs.Glob(ui.Files, "html/pages/*.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -39,21 +45,17 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	for _, page := range pages {
 		name := filepath.Base(page)
 
-		// The template.FuncMap must be registered with the template set before you
-		// call the ParseFiles() method. This means we have to use template.New() to
-		// create an empty template set, use the Func() method to register the
-		// template.FuncMap, and then parse the file as normal.
-		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
-		if err != nil {
-			return nil, err
+		// Create a slice containing the filepath patterns for the templates we
+		// want to parse.
+		patterns := []string{
+			"html/base.tmpl",
+			"html/partials/*.tmpl",
+			page,
 		}
 
-		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl")
-		if err != nil {
-			return nil, err
-		}
-
-		ts, err = ts.ParseFiles(page)
+		// Use ParseFS() instead of ParseFiles() to parse the template files
+		// from the ui.Files embedded filesystem.
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}
