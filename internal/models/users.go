@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+type UserModelInterface interface {
+	Insert(name, email, password string) error
+	Authenticate(email, password string) (int, error)
+	Exists(id int) (bool, error)
+}
+
 // Define a new User struct. Notice how the field names and types align
 // with the columsn ins the database "users" table?
 type User struct {
