@@ -87,14 +87,17 @@ func TestUserSignup(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
+
 	_, _, body := ts.get(t, "/user/signup")
 	validCSRFToken := extractCSRFToken(t, body)
+
 	const (
 		validName     = "Bob"
 		validPassword = "validPa$$word"
 		validEmail    = "bob@example.com"
-		formTag       = "<form action='/user/signup' method='POST' novalidate>"
+		formTag       = `<form action="/user/signup" method="POST" novalidate>`
 	)
+
 	tests := []struct {
 		name         string
 		userName     string
@@ -175,6 +178,7 @@ func TestUserSignup(t *testing.T) {
 			wantFormTag:  formTag,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			form := url.Values{}
@@ -184,7 +188,9 @@ func TestUserSignup(t *testing.T) {
 			form.Add("csrf_token", tt.csrfToken)
 
 			code, _, body := ts.postForm(t, "/user/signup", form)
+
 			assert.Equal(t, code, tt.wantCode)
+
 			if tt.wantFormTag != "" {
 				assert.StringContains(t, body, tt.wantFormTag)
 			}

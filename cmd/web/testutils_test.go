@@ -44,7 +44,7 @@ func newTestApplication(t *testing.T) *application {
 	}
 
 	// And a form decoder.
-	formDecorder := form.NewDecoder()
+	formDecoder := form.NewDecoder()
 
 	// And a session manager instance. Note that we use the same settings as
 	// production, except that we *don't* set a Store for the session manager.
@@ -59,7 +59,7 @@ func newTestApplication(t *testing.T) *application {
 		snippets:       &mocks.SnippetModel{}, // User the mock
 		users:          &mocks.UserModel{},    // User the mock
 		templateCache:  templateCache,
-		formDecoder:    formDecorder,
+		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 	}
 }
@@ -69,8 +69,6 @@ type testServer struct {
 	*httptest.Server
 }
 
-// Create a new TestServer helper which initializes and returns a new instance
-// of our custom testServer type.
 func newTestServer(t *testing.T, h http.Handler) *testServer {
 	// Initialize the test server as normal.
 	ts := httptest.NewTLSServer(h)
@@ -82,14 +80,14 @@ func newTestServer(t *testing.T, h http.Handler) *testServer {
 	}
 
 	// Add the cookie jar to the test server client. Any response cookies will
-	// now be stored and sent with subsequent requests when using this client
+	// now be stored and sent with subsequent requests when using this client.
 	ts.Client().Jar = jar
 
-	// disable redirect-following the test server client by setting a custom
+	// Disable redirect-following for the test server client by setting a custom
 	// CheckRedirect function. This function will be called whenever a 3xx
 	// response is received by the client, and by always returning a
-	// http.ErrUSeLastResponse error it forces the client to immediately return
-	//the received response.
+	// http.ErrUseLastResponse error it forces the client to immediately return
+	// the received response.
 	ts.Client().CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
@@ -124,13 +122,15 @@ func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) (i
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	// Read the response body from the test server.
 	defer rs.Body.Close()
 	body, err := io.ReadAll(rs.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	body = bytes.TrimSpace(body)
+	bytes.TrimSpace(body)
+
 	// Return the response status, headers and body.
 	return rs.StatusCode, rs.Header, string(body)
 }
