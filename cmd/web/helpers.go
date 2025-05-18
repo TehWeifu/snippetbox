@@ -18,13 +18,17 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 	var (
 		method = r.Method
 		uri    = r.URL.RequestURI()
-		// Use debug.Stack() to get the stack trace. This returns a byte slice, which
-		// we need to convert to a string so that it's readable in the log entry.
-		trace = string(debug.Stack())
+		trace  = string(debug.Stack())
 	)
 
-	// Include the trace in the log entry
 	app.logger.Error(err.Error(), "method", method, "uri", uri, "trace", trace)
+
+	if app.debug {
+		body := fmt.Sprintf("%s\n%s", err, trace)
+		http.Error(w, body, http.StatusInternalServerError)
+		return
+	}
+
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 

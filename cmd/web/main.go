@@ -20,6 +20,7 @@ import (
 
 // Add a new users field to the application struct.
 type application struct {
+	debug          bool
 	logger         *slog.Logger
 	snippets       models.SnippetModelInterface // Use our new interface type.
 	users          models.UserModelInterface    // Use our new interface type.
@@ -31,6 +32,7 @@ type application struct {
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	dsn := flag.String("dsn", "user:pass@/db?parseTime=true", "MySQL data source name")
+	debug := flag.Bool("debug", false, "Enable debug mode")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -58,6 +60,7 @@ func main() {
 	// Initialize a models.userModel instance and add it to the application
 	// dependencies.
 	app := &application{
+		debug:          *debug,
 		logger:         logger,
 		snippets:       &models.SnippetModel{DB: db},
 		users:          &models.UserModel{DB: db},
